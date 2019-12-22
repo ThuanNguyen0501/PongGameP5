@@ -1,10 +1,11 @@
-function Blob(x, y, r) {
-    this.pos = createVector(x, y);
+function Blob(x, y, r, color) {
     this.r = r;
+    this.id = '';
+    this.pos = createVector(x, y);
     this.vel = createVector(0, 0);
 
-    this.show = function () {
-        fill(255);
+    this.show = () => {
+        fill(color);
         ellipse(this.pos.x, this.pos.y, this.r * 2, this.r * 2);
     }
 
@@ -13,6 +14,11 @@ function Blob(x, y, r) {
         newVel.setMag(3);
         this.vel.lerp(newVel, 0.2);
         this.pos.add(this.vel);
+    }
+
+    this.constrain = () => {
+        blob.pos.x = constrain(blob.pos.x, -width, width);
+        blob.pos.y = constrain(blob.pos.y, -height, height);
     }
 
     this.eats = (other) => {
