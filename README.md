@@ -1,2 +1,2 @@
-# PongGameP5
+# AgarIO
 The example ablout P5js
