@@ -21,7 +21,7 @@ socket.on('yourID', (payload) => {
 })
 
 socket.on('broadcast', (payload) => {
-  // console.log('>>heartBeat!', payload);
+  console.log('>>heartBeat!', payload);
   blobs = payload;
 })
 
@@ -52,7 +52,7 @@ function draw() {
   // strokeWeight(4);
   // stroke(51);
   background('#F3FAFF');
-  //giu co dinh
+  //translate ra giua
   translate(width / 2, height / 2);
 
   //smoooth zoom
@@ -76,19 +76,26 @@ function draw() {
 
       fill('#00FFA3 ');
       ellipse(blobs[i].x, blobs[i].y, blobs[i].r * 2, blobs[i].r * 2);
-      if (checkComplict({ x: blobs[i].x, y: blobs[i].y, r: blobs[i].r })) {
-        socket.emit('eats', i);
+      // đang boi roi cho nay
+      let params = checkComplict({ x: blobs[i].x, y: blobs[i].y, r: blobs[i].r });
+      if (params.eat) {
+        let data = {
+          myseft: params.myseft,
+          uniq: params.myseft ? blob.id : i,
+        }
+        if (params.myseft) {
+          let result = window.confirm('You lose!');
+          if (result) { window.location.reload(); }
+        }
+        socket.emit('eats', data);
       }
+      // đang boi roi cho nay
 
       //   // fill(255);
       //   // textAlign(CENTER);
       //   // textSize(4);
       //   // text(id);
       // }
-
-      // blobs[i].show();
-      // if (blob.eats(blobs[i])) {
-      //   blobs.splice(i, 1);
     }
   }
 
@@ -103,7 +110,7 @@ function draw() {
     color: '#FF0046',
   }
   socket.emit('update', data);
-  console.log("TCL: draw -> data", data)
+  // console.log("TCL: draw -> data", data)
 }
 
 function checkComplict(other) {
@@ -111,6 +118,6 @@ function checkComplict(other) {
   if (d < blob.r + other.r) {
     let sum = PI * blob.r * blob.r + PI * other.r * other.r;
     blob.r = sqrt(sum / PI);
-    return true;
+    return { myseft: blob.r < other.r ? true : false, eat: true };
   } else { return false; }
 }

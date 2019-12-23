@@ -3,7 +3,6 @@ var express = require("express");
 var http = require("http");
 var socketIO = require("socket.io");
 
-
 //create app
 const publicPath = path.join(__dirname, '../public')
 var port = process.env.PORT || 8080;
@@ -50,9 +49,9 @@ function Blob(id, x, y, r) {
 //Socket--------------------------
 
 //Broadcast
-setInterval(heartBeat, 1000);
+setInterval(heartBeat, 100);
 function heartBeat() {
-    // console.log(">>heartBeat -> blobs", blobs.length);
+    // console.log(">heartBeat -> blobs", blobs.length);
     if (blobs.length !== 0) io.emit('broadcast', blobs);
 }
 //Conection
@@ -72,13 +71,12 @@ io.on('connection', socket => {
         var blob = new Blob(socket.id, data.x, data.y, data.r);
         blobs.push(blob);
 
-        // socket.broadcast.emit('yourID', { id: socket.id });
         // io.clients[sessionID].send(socket.id);
         socket.emit('yourID', { id: socket.id });
     });
 
     socket.on('update', (data) => {
-        console.log(">Update: ", socket.id + ' ' + data.x + ' ' + data.y + ' ' + data.r);
+        // console.log(">Update: ", socket.id + ' ' + data.x + ' ' + data.y + ' ' + data.r);
         let { x, y, r } = data;
         let index = blobs.findIndex(blob => blob.id == socket.id);
         if (index !== -1) {
@@ -90,14 +88,26 @@ io.on('connection', socket => {
 
     socket.on('eats', (data) => {
         console.log(">>Eats:", data)
+        let index;
+        if (data.myseft) {
+            index = blobs.findIndex(blob => blob.id == data.uniq);
+        } else index = data.uniq;
+        if (blobs[index]) { blobs.splice(index, 1); };
 
     });
 });
 
 
+app.get("/", function (req, res) {
+    console.log("Response: ___________________ Welcome")
+    res.render("../public/welcome/index");
+});
 
-
-
+app.get("/agario", function (request, response) {
+    console.log('Response: ___________________ Agario');
+    response.render("../public/agario/index");
+});
+ 
 // catch 404 and forward to error handler
 app.use(function (req, res, next) {
     var err = new Error('Not Found');
@@ -108,16 +118,5 @@ app.use(function (req, res, next) {
 // error handler
 app.use(function (err, req, res, next) {
     res.status(err.status || 500);
-    res.render('error404/error-page.html');
-});
-
-app.get("/", function (request, response) {
-    console.log("Response: ___________________ Welcome")
-    response.render("welcome/index");
-});
-
-app.get("/agario", function (request, response) {
-    console.log('Response: ___________________ Agario');
-    response.render("agario/index");
-});
-
+    res.render('../public/error404/error-page.html');
+}); 
