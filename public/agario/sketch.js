@@ -5,6 +5,7 @@ let socket = io();
 
 var blob;
 var blobs = [];
+var cells = []
 var zoom = 1;
 
 socket.on('connect', () => {
@@ -20,9 +21,18 @@ socket.on('yourID', (payload) => {
   blob.id = payload.id;
 })
 
+socket.on('eatCellsOK', (payload) => {
+  let { r } = payload;
+  let sum = PI * blob.r * blob.r + PI * r * r;
+  blob.r = sqrt(sum / PI);
+})
+
 socket.on('broadcast', (payload) => {
   console.log('>>heartBeat!', payload);
-  blobs = payload;
+  let { cells, players } = payload;
+  if (cells) {
+    cells = cells;
+  } else blobs = players;
 })
 
 function setup() {
@@ -109,7 +119,7 @@ function draw() {
     r: blob.r,
     color: '#FF0046',
   }
-  socket.emit('update', data);
+  socket.emit('updatePlayerPosition', data);
   // console.log("TCL: draw -> data", data)
 }
 
