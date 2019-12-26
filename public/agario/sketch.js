@@ -4,35 +4,27 @@
 let socket = io();
 
 var blob;
-var blobs = [];
+var players = [];
 var cells = []
 var zoom = 1;
 
-socket.on('connect', () => {
-  console.log('_Conected to server!', socket.id);
-})
+socket.on('connect', () => { console.log('_Conected to server!', socket.id); })
 
-socket.on('disconnect', () => {
-  console.log('_Disconected from server!');
-})
+socket.on('disconnect', () => { console.log('_Disconected from server!'); })
 
-socket.on('yourID', (payload) => {
-  // console.log('yourID: ', payload);
-  blob.id = payload.id;
-})
+socket.on('yourID', (payload) => { blob.id = payload.id; })
 
-socket.on('eatCellsOK', (payload) => {
+socket.on('eatCellOK', (payload) => {
+  console.log(">>eatCellOK", payload)
   let { r } = payload;
   let sum = PI * blob.r * blob.r + PI * r * r;
   blob.r = sqrt(sum / PI);
 })
 
 socket.on('broadcast', (payload) => {
-  console.log('>>heartBeat!', payload);
-  let { cells, players } = payload;
-  if (cells) {
-    cells = cells;
-  } else blobs = players;
+  // console.log('>>heartBeat!', payload);
+  cells = payload.cells;
+  players = payload.players;
 })
 
 function setup() {
@@ -44,8 +36,8 @@ function setup() {
   // for (var i = 0; i < 100; i++) {
   //   let x = random(-width, width);
   //   let y = random(-height, height);
-  //   blobs[i] = new Blob(x, y, 16, '#00FFA3');
-  //   // blobs[i] = new Blob(x, y, 16, theme.colors[random(0, theme.colors.length - 1)]);
+  //   players[i] = new Blob(x, y, 16, '#00FFA3');
+  //   // players[i] = new Blob(x, y, 16, theme.colors[random(0, theme.colors.length - 1)]);
   // }
 
   //Socket handler ----------------------
@@ -71,35 +63,30 @@ function draw() {
   scale(zoom);
   translate(-blob.pos.x, -blob.pos.y);
 
-  //render blobs
-  for (let i = blobs.length - 1; i >= 0; i--) {
-    // console.log("TCL: draw -> blobs.length", blobs.length)
-    // if (blobs[i].id) console.log('%c ID', 'color: white; background: green; font-size: 24px;', blobs[i].id);
+  //Render cells
+  for (let i = cells.length - 1; i >= 0; i--) {
 
-    // socket.id !== id.substring(2, id.length)
-    if (!blobs[i].id || blobs[i].id !== blob.id) {
-      // let t = new Blob(blobs[i].x, rblobs[i].y, blobs[i].r, '#FF0046');
-      // t.show();
-      // if (blob.eats(t)) {
-      //   socket.emit('eats', i);
-      // }
+    fill('#00FFA3 ');
+    ellipse(cells[i].x, cells[i].y, cells[i].r * 2, cells[i].r * 2);
 
-      fill('#00FFA3 ');
-      ellipse(blobs[i].x, blobs[i].y, blobs[i].r * 2, blobs[i].r * 2);
-      // đang boi roi cho nay
-      let params = checkComplict({ x: blobs[i].x, y: blobs[i].y, r: blobs[i].r });
-      if (params.eat) {
-        let data = {
-          myseft: params.myseft,
-          uniq: params.myseft ? blob.id : i,
+    let touch = checkComplict({ x: cells[i].x, y: cells[i].y, r: cells[i].r });
+    if (touch) {
+      socket.emit('eatCell', cells[i]);
+    }
+  }
+
+  //Render players
+  for (let i = players.length - 1; i >= 0; i--) {
+    if (!players[i].id || players[i].id !== blob.id) {
+      fill('#00FFA3');
+      ellipse(players[i].x, players[i].y, players[i].r * 2, players[i].r * 2);
+
+      let touch = checkComplict({ x: players[i].x, y: players[i].y, r: players[i].r });
+      if (touch) {
+        if (blob.r > players[i].r) {
+          socket.emit('eatPlayer', players[i]);
         }
-        if (params.myseft) {
-          let result = window.confirm('You lose!');
-          if (result) { window.location.reload(); }
-        }
-        socket.emit('eats', data);
       }
-      // đang boi roi cho nay
 
       //   // fill(255);
       //   // textAlign(CENTER);
@@ -125,9 +112,5 @@ function draw() {
 
 function checkComplict(other) {
   let d = p5.Vector.dist(blob.pos, createVector(other.x, other.y));
-  if (d < blob.r + other.r) {
-    let sum = PI * blob.r * blob.r + PI * other.r * other.r;
-    blob.r = sqrt(sum / PI);
-    return { myseft: blob.r < other.r ? true : false, eat: true };
-  } else { return false; }
+  return (d < blob.r + other.r);
 }

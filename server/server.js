@@ -2,6 +2,7 @@ var path = require("path");
 var express = require("express");
 var http = require("http");
 var socketIO = require("socket.io");
+var uuidv = require('uuid/v4');
 
 //create app
 const publicPath = path.join(__dirname, '../public')
@@ -32,16 +33,11 @@ function getRandomArbitrary(min, max) {
 
 var players = [];
 var cells = [];
-var lastId = 0;
-// function init() {
 for (var i = 0; i < 10; i++) {
     let x = getRandomArbitrary(-1120, 1120);
     let y = getRandomArbitrary(-600, 600);
-    cells[i] = { id: i, x, y, r: 16, color: '#00FFA3' };
-    // blobs[i] = new Blob(x, y, 16, theme.colors[random(0, theme.colors.length - 1)]);
+    cells[i] = { id: uuidv(), x, y, r: 16, color: '#00FFA3' };
 }
-lastId = cells.length;
-// }
 
 function Blob(id, x, y, r) {
     this.id = id;
@@ -52,24 +48,18 @@ function Blob(id, x, y, r) {
 //Socket--------------------------
 
 //Broadcast
-// function updateUserPosition() {
-
-function heartBeat() {
-    // console.log(">heartBeat -> blobs", blobs.length);
-    if (players.length !== 0) io.emit('broadcast', { players });
-}
-// }
+setInterval(() => {
+    broadcastCommon('players')
+}, 100);
 
 function broadcastCommon(type) {
     if (players.length !== 0) {
-        if (type === 'cells') {
-            io.emit('broadcast', { cells });
-        } else io.emit('broadcast', { players });
+        io.emit('broadcast', { cells, players });
+        // if (type === 'cells') {
+        //     io.emit('broadcast', { type: 'cells', cells });
+        // } else io.emit('broadcast', { type: 'players', players });
     }
 }
-
-setInterval(broadcastCommon('players'), 100);
-
 
 //Conection
 io.on('connection', socket => {
@@ -87,7 +77,6 @@ io.on('connection', socket => {
         console.log(">Start: ", socket.id + ' ' + data.x + ' ' + data.y + ' ' + data.r);
         var player = new Blob(socket.id, data.x, data.y, data.r);
         players.push(player);
-
         // io.clients[sessionID].send(socket.id);
         socket.emit('yourID', { id: socket.id });
     });
@@ -103,27 +92,29 @@ io.on('connection', socket => {
         }
     });
 
-    socket.on('eatCells', (smallCell) => {
-        // console.log(">updatePlayer: ", socket.id + ' ' + data.x + ' ' + data.y + ' ' + data.r);
-        let { x, y, r, id } = smallCell;
-        let index = cells.findIndex(cell => cell.id == id);
+    socket.on('eatCell', (smallCell) => {
+        let index = cells.findIndex(cell => cell.id == smallCell.id);
         if (index !== -1) {
-            socket.emit('eatCellsOK', { r });
-            cells.push({ id: lastId, x, y, r: 16, color: '#00FFA3' })
-            lastId = index;
             cells.splice(index, 1);
-            broadcastCommon('cell')
+            socket.emit('eatCellOK', { r: 16 });
+            cells.push({
+                id: uuidv(),
+                x: getRandomArbitrary(-1120, 1120),
+                y: getRandomArbitrary(-600, 600),
+                r: 16,
+                color: '#00FFA3'
+            })
         }
     });
 
-    socket.on('eats', (data) => {
-        console.log(">>Eats:", data)
-        let index;
-        if (data.myseft) {
-            index = blobs.findIndex(blob => blob.id == data.uniq);
-        } else index = data.uniq;
-        if (blobs[index]) { blobs.splice(index, 1); };
-
+    socket.on('eatPlayer', (guy) => {
+        let { r, id } = guy;
+        let index = players.findIndex(player => player.id == guy.id);
+        if (players[index]) {
+            socket.emit('eatCellOK', { r });
+            // players.splice(index, 1);
+            console.log("TCL: io.clients", io.clients)
+        }
     });
 });
 
