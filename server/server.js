@@ -44,6 +44,7 @@ function Blob(id, x, y, r) {
     this.x = x;
     this.y = y;
     this.r = r
+    this.live = true,
 }
 //Socket--------------------------
 
@@ -112,8 +113,25 @@ io.on('connection', socket => {
         let index = players.findIndex(player => player.id == guy.id);
         if (players[index]) {
             socket.emit('eatCellOK', { r });
-            // players.splice(index, 1);
-            console.log("TCL: io.clients", io.clients)
+            let newPosition = {
+                x: getRandomArbitrary(-1120, 1120),
+                y: getRandomArbitrary(-600, 600),
+                r: 64,
+                live: false,
+                // color: '#00FFA3'
+            }
+            players[index] = { ...players[index], ...newPosition };
+
+
+            // var clients = io.sockets.adapter.rooms[id];
+            // for (var clientId in clients_in_the_room) {
+            //     console.log('client: %s', clientId); //Seeing is believing 
+            //     var client_socket = io.sockets.connected[clientId];//Do whatever you want with this
+            // }
+
+
+            let loser = io.sockets.connected[id];
+            loser.emit('youLose', newPosition);
         }
     });
 });

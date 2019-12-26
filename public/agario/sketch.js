@@ -14,6 +14,12 @@ socket.on('disconnect', () => { console.log('_Disconected from server!'); })
 
 socket.on('yourID', (payload) => { blob.id = payload.id; })
 
+socket.on('broadcast', (payload) => {
+  // console.log('>>heartBeat!', payload);
+  cells = payload.cells;
+  players = payload.players;
+})
+
 socket.on('eatCellOK', (payload) => {
   console.log(">>eatCellOK", payload)
   let { r } = payload;
@@ -21,11 +27,17 @@ socket.on('eatCellOK', (payload) => {
   blob.r = sqrt(sum / PI);
 })
 
-socket.on('broadcast', (payload) => {
-  // console.log('>>heartBeat!', payload);
-  cells = payload.cells;
-  players = payload.players;
+socket.on('youLose', (payload) => {
+  console.log(">>youLose", payload)
+  // let { x, y, r } = payload;
+  // blob.x = x;
+  // blob.y = y;
+  // blob.r = r;
 })
+
+
+
+
 
 function setup() {
   //P5 handler ----------------------
@@ -83,7 +95,7 @@ function draw() {
 
       let touch = checkComplict({ x: players[i].x, y: players[i].y, r: players[i].r });
       if (touch) {
-        if (blob.r > players[i].r) {
+        if (blob.r > players[i].r && players[i].live) {
           socket.emit('eatPlayer', players[i]);
         }
       }
