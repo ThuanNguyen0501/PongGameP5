@@ -26,28 +26,34 @@ app.set('views', __dirname);
 // app.set('view engine', 'ejs');
 
 
-//--------------------------
-function getRandomArbitrary(min, max) {
+//Init--------------------------
+function random(min, max) {
     return Math.random() * (max - min) + min;
 }
 
+function randomInt(max) {
+    return Math.floor(Math.random() * Math.floor(max));
+}
+
+const colours = ['#FF0046', '#FF8202', '#0000FE', '#01CFFF', '#FF0078', '#FFF602', '#00FFA3', '#00FF89', '#7D01E9', '7D01E9', 'FFF602'];
+const _width = 1120, _height = 600;
 var players = [];
 var cells = [];
 for (var i = 0; i < 10; i++) {
-    let x = getRandomArbitrary(-1120, 1120);
-    let y = getRandomArbitrary(-600, 600);
-    cells[i] = { id: uuidv(), x, y, r: 16, color: '#00FFA3' };
+    let x = random(-_width, _width);
+    let y = random(-_height, _height);
+    cells[i] = { id: uuidv(), x, y, r: 16, color: colours[randomInt(10)] };
 }
 
-function Blob(id, x, y, r) {
+function Blob(id, x, y, r, c) {
     this.id = id;
     this.x = x;
     this.y = y;
-    this.r = r
-    this.live = true,
+    this.r = r;
+    this.color = c;
 }
-//Socket--------------------------
 
+//Socket--------------------------
 //Broadcast
 setInterval(() => {
     broadcastCommon('players')
@@ -56,14 +62,13 @@ setInterval(() => {
 function broadcastCommon(type) {
     if (players.length !== 0) {
         io.emit('broadcast', { cells, players });
-        // if (type === 'cells') {
-        //     io.emit('broadcast', { type: 'cells', cells });
-        // } else io.emit('broadcast', { type: 'players', players });
     }
 }
 
 //Conection
 io.on('connection', socket => {
+    // socket.emit('request', /* … */); // emit an event to the socket
+    // io.emit('broadcast', /* … */); // emit an event to all connected sockets
     console.log('>New connection: ', socket.id);
 
     socket.on('disconnect', () => {
@@ -72,13 +77,10 @@ io.on('connection', socket => {
         if (index !== -1) { players.splice(index, 1); }
     })
 
-    // socket.emit('request', /* … */); // emit an event to the socket
-    // io.emit('broadcast', /* … */); // emit an event to all connected sockets
     socket.on('start', (data) => {
-        console.log(">Start: ", socket.id + ' ' + data.x + ' ' + data.y + ' ' + data.r);
-        var player = new Blob(socket.id, data.x, data.y, data.r);
+        // console.log(">Start: ", socket.id + ' ' + data.x + ' ' + data.y + ' ' + data.r);
+        var player = new Blob(socket.id, data.x, data.y, data.r, data.color);
         players.push(player);
-        // io.clients[sessionID].send(socket.id);
         socket.emit('yourID', { id: socket.id });
     });
 
@@ -97,13 +99,13 @@ io.on('connection', socket => {
         let index = cells.findIndex(cell => cell.id == smallCell.id);
         if (index !== -1) {
             cells.splice(index, 1);
-            socket.emit('eatCellOK', { r: 16 });
+            socket.emit('eatOK', { r: 16 });
             cells.push({
                 id: uuidv(),
-                x: getRandomArbitrary(-1120, 1120),
-                y: getRandomArbitrary(-600, 600),
+                x: random(-_width, _width),
+                y: random(-_height, _height),
                 r: 16,
-                color: '#00FFA3'
+                color: colours[randomInt(10)]
             })
         }
     });
@@ -112,38 +114,28 @@ io.on('connection', socket => {
         let { r, id } = guy;
         let index = players.findIndex(player => player.id == guy.id);
         if (players[index]) {
-            socket.emit('eatCellOK', { r });
-            let newPosition = {
-                x: getRandomArbitrary(-1120, 1120),
-                y: getRandomArbitrary(-600, 600),
-                r: 64,
-                live: false,
-                // color: '#00FFA3'
-            }
-            players[index] = { ...players[index], ...newPosition };
-
-
-            // var clients = io.sockets.adapter.rooms[id];
-            // for (var clientId in clients_in_the_room) {
-            //     console.log('client: %s', clientId); //Seeing is believing 
-            //     var client_socket = io.sockets.connected[clientId];//Do whatever you want with this
-            // }
-
-
+            socket.emit('eatOK', { r });
+            players.splice(index, 1);
             let loser = io.sockets.connected[id];
-            loser.emit('youLose', newPosition);
+            loser.emit('youLose');
+        }
+    });
+
+    socket.on('dead', (guy) => {
+        let index = players.findIndex(player => player.id == socket.id);
+        if (players[index]) {
+            socket.emit('youLose');
+            players.splice(index, 1);
         }
     });
 });
 
-
+//Route
 app.get("/", function (req, res) {
-    console.log("Response: ___________________ Welcome")
     res.render("../public/welcome/index");
 });
 
 app.get("/agario", function (request, response) {
-    console.log('Response: ___________________ Agario');
     response.render("../public/agario/index");
 });
 

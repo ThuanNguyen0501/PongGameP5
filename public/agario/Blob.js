@@ -3,10 +3,17 @@ function Blob(x, y, r, color) {
     this.id = '';
     this.pos = createVector(x, y);
     this.vel = createVector(0, 0);
+    this.color = color;
 
     this.show = () => {
         fill(color);
         ellipse(this.pos.x, this.pos.y, this.r * 2, this.r * 2);
+
+        fill(0, 102, 153);
+        textSize(14);
+        text('X: ' + this.pos.x, this.pos.x + 70, this.pos.y + 70);
+        text('Y: ' + this.pos.y, this.pos.x + 70, this.pos.y + 84);
+        text('R: ' + this.r, this.pos.x + 70, this.pos.y + 98);
     }
 
     this.update = () => {
