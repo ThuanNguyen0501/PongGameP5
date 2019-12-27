@@ -48,18 +48,13 @@ function dead() {
   } else { location.replace("/") }
 }
 
-function randomFloat(min, max) {
-  return Math.random() * (max - min) + min;
-}
+function randomFloat(min, max) { return Math.random() * (max - min) + min; }
 
-function randomInt(max) {
-  return Math.floor(Math.random() * Math.floor(max));
-}
+function randomInt(max) { return Math.floor(Math.random() * Math.floor(max)); }
 
 function setup() {
   //P5 handler ----------------------
   createCanvas(1120, 600);
-
   blob = new Blob(random(width), random(height), 64, colours[randomInt(10)]);
 
   //Socket handler ----------------------

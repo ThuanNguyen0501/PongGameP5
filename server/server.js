@@ -11,29 +11,21 @@ var app = express();
 var server = http.createServer(app);
 var io = socketIO(server);
 
-
 app.use(express.static(publicPath));
 
 //Server start
 server.listen(port, () => {
-    console.log('_________Server start: http://localhost:' + port);
+    console.log('__Server start: http://localhost:' + port);
 });
 
 // view engine setup
 app.engine('html', require('ejs').renderFile);
 app.set('view engine', 'html');
 app.set('views', __dirname);
-// app.set('view engine', 'ejs');
-
 
 //Init--------------------------
-function random(min, max) {
-    return Math.random() * (max - min) + min;
-}
-
-function randomInt(max) {
-    return Math.floor(Math.random() * Math.floor(max));
-}
+function random(min, max) { return Math.random() * (max - min) + min; }
+function randomInt(max) { return Math.floor(Math.random() * Math.floor(max)); }
 
 const colours = ['#FF0046', '#FF8202', '#0000FE', '#01CFFF', '#FF0078', '#FFF602', '#00FFA3', '#00FF89', '#7D01E9', '7D01E9', 'FFF602'];
 const _width = 1120, _height = 600;
