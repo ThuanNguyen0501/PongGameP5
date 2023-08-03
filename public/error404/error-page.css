@@ -1,5 +1,4 @@
-@import url(https://fonts.googleapis.com/css?family=opensans:500);
-body {
+ body {
   background: #007aff;
   color: #fff;
   font-family: 'Open Sans', sans-serif;
@@ -33,11 +32,12 @@ body {
   line-height: 80%;
 }
 
-._2 {
+.message {
   text-align: center;
   display: block;
   position: relative;
-  font-size: 20px;
+  font-size: 2.5rem;
+  margin-bottom: 1rem;
 }
 
 .text {
@@ -45,26 +45,23 @@ body {
   text-align: center;
   position: relative;
   display: inline-block;
-  margin: 19px 0px 0px 0px;
-  /* top: 256.301px; */
+  margin: 19px 0px 0px 0px; 
   z-index: 3;
   width: 100%;
   line-height: 1.2em;
   display: inline-block;
 }
 
-.btn {
-  background-color: rgb( 255, 255, 255);
-  position: relative;
-  display: inline-block;
-  width: 358px;
-  padding: 5px;
-  z-index: 5;
-  font-size: 25px;
-  margin: 0 auto;
-  color: #007aff;
+.btn { 
+  font-weight: 300;
+  color: #fff;
+  font-size: 1.2em;
   text-decoration: none;
-  margin-right: 10px
+  border: 1px solid #efefef;
+  padding: .5em;
+  border-radius: 10px;
+  margin: 0 auto; 
+  margin-top: 1.5rem; 
 }
 
 .right {
@@ -188,7 +185,7 @@ hr:after {
 
 .x4 {
   left: 470px;
-  botttom: 20px;
+  bottom: 20px;
   -webkit-transform: scale(0.75);
   -moz-transform: scale(0.75);
   transform: scale(0.75);
