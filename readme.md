@@ -1,5 +1,9 @@
 This game is inspired by https://agar.io/
 
+# Stack
+
+nodejs, p5js
+
 # Run
 
 ```bash
