@@ -5,7 +5,7 @@ var socketIO = require("socket.io");
 var uuidv = require("uuid/v4");
 
 //create app
-const publicPath = path.join(__dirname, "../public");
+const publicPath = path.join(__dirname, "./public");
 var port = process.env.PORT || 8080;
 var app = express();
 var server = http.createServer(app);
@@ -143,11 +143,11 @@ io.on("connection", (socket) => {
 
 //Route
 app.get("/", function (req, res) {
-  res.render("../public/welcome/index");
+  res.render("./public/welcome/index");
 });
 
 app.get("/agario", function (request, response) {
-  response.render("../public/agario/index");
+  response.render("./public/agario/index");
 });
 
 // catch 404 and forward to error handler
@@ -160,5 +160,5 @@ app.use(function (req, res, next) {
 // error handler
 app.use(function (err, req, res, next) {
   res.status(err.status || 500);
-  res.render("../public/error404/error-page.html");
+  res.render("./public/error404/error-page.html");
 });
